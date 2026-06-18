@@ -1,9 +1,9 @@
-// src/scheduler/fcfs.c
+// src/scheduler/sjf-non-preemptive.c
 #include <stdio.h>
 #include "task.h"
 #include "gpu.h"
 
-int all_done_fcfs(Task tasks[], int n) {
+int all_done_sjf_np(Task tasks[], int n) {
     for (int i = 0; i < n; i++) {
         if (tasks[i].remaining_time > 0)
             return 0;
@@ -11,11 +11,11 @@ int all_done_fcfs(Task tasks[], int n) {
     return 1;
 }
 
-int select_fcfs(Task tasks[], int n, int current_time) {
+int select_shortest_job_np(Task tasks[], int n, int current_time) {
     int best = -1;
     for (int i = 0; i < n; i++) {
         if (tasks[i].arrive_time <= current_time && tasks[i].remaining_time > 0) {
-            if (best == -1 || tasks[i].arrive_time < tasks[best].arrive_time) {
+            if (best == -1 || tasks[i].compute_time < tasks[best].compute_time) {
                 best = i;
             }
         }
@@ -23,15 +23,15 @@ int select_fcfs(Task tasks[], int n, int current_time) {
     return best;
 }
 
-void run_fcfs(Task tasks[], int n, GPU* gpu) {
+void run_sjf_np(Task tasks[], int n, GPU* gpu) {
     int current_time = 0;
 
     for (int i = 0; i < n; i++) {
         tasks[i].remaining_time = tasks[i].compute_time;
     }
 
-    while (!all_done_fcfs(tasks, n)) {
-        int idx = select_fcfs(tasks, n, current_time);
+    while (!all_done_sjf_np(tasks, n)) {
+        int idx = select_shortest_job_np(tasks, n, current_time);
 
         if (idx == -1) {
             current_time++;
