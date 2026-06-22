@@ -21,4 +21,8 @@ typedef struct Task {
 
 } Task;
 
+Task* create_task(int id, int arrive, int compute, int transfer, int transfer_back, int mem_req, int prio);
+void free_task(Task* t);
+void print_task(Task* t);
+
 #endif
