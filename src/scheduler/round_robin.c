@@ -74,6 +74,7 @@ void run_rr(Task tasks[], int n, GPU* gpu, int quantum) {
             current->finish_time = current_time;
             current->turnaround_time =
                 current->finish_time - current->arrive_time;
+            current->waiting_time = current->turnaround_time - current->compute_time;
 }
     }
 
