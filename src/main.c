@@ -57,7 +57,7 @@ int main() {
 // --- Chạy FCFS ---
     Task tasks_for_fcfs[NUM_TASKS]; 
     copy_task_list(tasks_for_fcfs, original_tasks, NUM_TASKS); 
-    my_gpu.used_memory = 0;    // Reset RAM
+    my_gpu.used_memory = 0;   
     my_gpu.running_tasks = 0;
     run_scheduler(tasks_for_fcfs, NUM_TASKS, &my_gpu, POLICY_FCFS);
     print_benchmark_row(tasks_for_fcfs, NUM_TASKS, "FCFS");
@@ -65,7 +65,7 @@ int main() {
     // --- Chạy Round Robin ---
     Task tasks_for_rr[NUM_TASKS];
     copy_task_list(tasks_for_rr, original_tasks, NUM_TASKS); 
-    my_gpu.used_memory = 0;    // Reset RAM
+    my_gpu.used_memory = 0;    
     my_gpu.running_tasks = 0;
     run_scheduler(tasks_for_rr, NUM_TASKS, &my_gpu, POLICY_ROUND_ROBIN);
     print_benchmark_row(tasks_for_rr, NUM_TASKS, "Round Robin");
@@ -73,11 +73,36 @@ int main() {
     // --- Chạy Priority ---
     Task tasks_for_pri[NUM_TASKS]; 
     copy_task_list(tasks_for_pri, original_tasks, NUM_TASKS); 
-    my_gpu.used_memory = 0;    // Reset RAM
+    my_gpu.used_memory = 0;  
     my_gpu.running_tasks = 0;
     run_scheduler(tasks_for_pri, NUM_TASKS, &my_gpu, POLICY_PRIORITY);
     print_benchmark_row(tasks_for_pri, NUM_TASKS, "Priority");
+    // Chạy SJF Non-Preemptive
+    Task tasks_for_sjf_np[NUM_TASKS]; 
+    copy_task_list(tasks_for_sjf_np, original_tasks, NUM_TASKS); 
+    my_gpu.used_memory = 0;    
+    my_gpu.running_tasks = 0;
+    run_scheduler(tasks_for_sjf_np, NUM_TASKS, &my_gpu, POLICY_SJF_NON_PREEMPTIVE);
+    print_benchmark_row(tasks_for_sjf_np, NUM_TASKS, "SJF (Non-Preep)");
+
+    // Chạy SJF Preemptive 
+    Task tasks_for_sjf_p[NUM_TASKS]; 
+    copy_task_list(tasks_for_sjf_p, original_tasks, NUM_TASKS); 
+    my_gpu.used_memory = 0;    
+    my_gpu.running_tasks = 0;
+    run_scheduler(tasks_for_sjf_p, NUM_TASKS, &my_gpu, POLICY_SJF_PREEMPTIVE);
+    print_benchmark_row(tasks_for_sjf_p, NUM_TASKS, "SJF (Preemptive)");
+
+    // Chạy MLFQ
+    Task tasks_for_mlfq[NUM_TASKS]; 
+    copy_task_list(tasks_for_mlfq, original_tasks, NUM_TASKS); 
+    my_gpu.used_memory = 0;    
+    my_gpu.running_tasks = 0;
+    run_scheduler(tasks_for_mlfq, NUM_TASKS, &my_gpu, POLICY_MLFQ);
+    print_benchmark_row(tasks_for_mlfq, NUM_TASKS, "MLFQ");
     printf("\nHoan thanh mo phong!\n");
+
     return 0;
+
 
 }
