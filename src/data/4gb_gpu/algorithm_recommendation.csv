@@ -1,0 +1,7 @@
+﻿Thuật toán,Trung bình Makespan,Trung bình Thời gian chờ,Trung bình Thời gian lưu,Trung bình Throughput,Ghi chú
+FCFS,423.82,182.35,211.33,0.0345,
+Round Robin,423.82,234.70,263.68,0.0345,
+Priority,423.82,179.29,208.26,0.0345,
+SJF (NP),423.82,127.37,156.35,0.0345,
+SJF (Pre),423.82,120.65,149.63,0.0345,Best Turnaround; Best Waiting; 
+MLFQ,423.82,229.35,258.33,0.0345,

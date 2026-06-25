@@ -134,7 +134,7 @@ void generate_algorithm_recommendation(int vram) {
     FILE *fin = fopen(in_file, "r");
     if (!fin) return;
 
-    AlgoStats stats[200];
+    AlgoStats stats[20];
     int num_stats = 0;
 
     char line[512];
@@ -150,14 +150,14 @@ void generate_algorithm_recommendation(int vram) {
         if (sscanf(line, "%d,%49[^,],%d,%d,%f,%f,%f", &run, pol, &tasks, &makespan, &wait, &turn, &thr) == 7) {
             int found = -1;
             for (int i = 0; i < num_stats; i++) {
-                if (stats[i].num_tasks == tasks && strcmp(stats[i].policy, pol) == 0) {
+                if (strcmp(stats[i].policy, pol) == 0) {
                     found = i;
                     break;
                 }
             }
-            if (found == -1 && num_stats < 200) {
+            if (found == -1 && num_stats < 20) {
                 strcpy(stats[num_stats].policy, pol);
-                stats[num_stats].num_tasks = tasks;
+                stats[num_stats].num_tasks = 0;
                 stats[num_stats].count = 1;
                 stats[num_stats].sum_makespan = makespan;
                 stats[num_stats].sum_waiting = wait;
@@ -179,59 +179,44 @@ void generate_algorithm_recommendation(int vram) {
     if (!fout) return;
 
     fprintf(fout, "\xEF\xBB\xBF");
-    fprintf(fout, "Số lượng Task,Thuật toán,Trung bình Makespan,Trung bình Thời gian chờ,Trung bình Thời gian lưu,Trung bình Throughput,Ghi chú\n");
+    fprintf(fout, "Thuật toán,Trung bình Makespan,Trung bình Thời gian chờ,Trung bình Thời gian lưu,Trung bình Throughput,Ghi chú\n");
 
-    int distinct_tasks[50];
-    int num_distinct = 0;
+    float min_turn = 1e9, min_wait = 1e9, min_makespan = 1e9, max_thr = -1;
+    float max_turn = -1, max_wait = -1, max_makespan = -1, min_thr = 1e9;
+    
     for (int i = 0; i < num_stats; i++) {
-        int found = 0;
-        for (int j = 0; j < num_distinct; j++) {
-            if (distinct_tasks[j] == stats[i].num_tasks) { found = 1; break; }
-        }
-        if (!found && num_distinct < 50) {
-            distinct_tasks[num_distinct++] = stats[i].num_tasks;
+        if (stats[i].count > 0) {
+            float avg_turn = stats[i].sum_turnaround / stats[i].count;
+            float avg_wait = stats[i].sum_waiting / stats[i].count;
+            float avg_make = stats[i].sum_makespan / stats[i].count;
+            float avg_thr = stats[i].sum_throughput / stats[i].count;
+            if (avg_turn < min_turn) min_turn = avg_turn;
+            if (avg_wait < min_wait) min_wait = avg_wait;
+            if (avg_make < min_makespan) min_makespan = avg_make;
+            if (avg_thr > max_thr) max_thr = avg_thr;
+
+            if (avg_turn > max_turn) max_turn = avg_turn;
+            if (avg_wait > max_wait) max_wait = avg_wait;
+            if (avg_make > max_makespan) max_makespan = avg_make;
+            if (avg_thr < min_thr) min_thr = avg_thr;
         }
     }
 
-    for (int d = 0; d < num_distinct; d++) {
-        int t = distinct_tasks[d];
-        float min_turn = 1e9, min_wait = 1e9, min_makespan = 1e9, max_thr = -1;
-        float max_turn = -1, max_wait = -1, max_makespan = -1, min_thr = 1e9;
-        
-        for (int i = 0; i < num_stats; i++) {
-            if (stats[i].num_tasks == t && stats[i].count > 0) {
-                float avg_turn = stats[i].sum_turnaround / stats[i].count;
-                float avg_wait = stats[i].sum_waiting / stats[i].count;
-                float avg_make = stats[i].sum_makespan / stats[i].count;
-                float avg_thr = stats[i].sum_throughput / stats[i].count;
-                if (avg_turn < min_turn) min_turn = avg_turn;
-                if (avg_wait < min_wait) min_wait = avg_wait;
-                if (avg_make < min_makespan) min_makespan = avg_make;
-                if (avg_thr > max_thr) max_thr = avg_thr;
-
-                if (avg_turn > max_turn) max_turn = avg_turn;
-                if (avg_wait > max_wait) max_wait = avg_wait;
-                if (avg_make > max_makespan) max_makespan = avg_make;
-                if (avg_thr < min_thr) min_thr = avg_thr;
-            }
-        }
-
-        for (int i = 0; i < num_stats; i++) {
-            if (stats[i].num_tasks == t && stats[i].count > 0) {
-                float avg_turn = stats[i].sum_turnaround / stats[i].count;
-                float avg_wait = stats[i].sum_waiting / stats[i].count;
-                float avg_make = stats[i].sum_makespan / stats[i].count;
-                float avg_thr = stats[i].sum_throughput / stats[i].count;
-                
-                char note[256] = "";
-                if (avg_turn <= min_turn + 0.001 && min_turn < max_turn - 0.001) strcat(note, "Best Turnaround; ");
-                if (avg_wait <= min_wait + 0.001 && min_wait < max_wait - 0.001) strcat(note, "Best Waiting; ");
-                if (avg_make <= min_makespan + 0.001 && min_makespan < max_makespan - 0.001) strcat(note, "Best Makespan; ");
-                if (avg_thr >= max_thr - 0.001 && max_thr > min_thr + 0.001) strcat(note, "Best Throughput; ");
-                
-                fprintf(fout, "%d,%s,%.2f,%.2f,%.2f,%.4f,%s\n", 
-                        t, stats[i].policy, avg_make, avg_wait, avg_turn, avg_thr, note);
-            }
+    for (int i = 0; i < num_stats; i++) {
+        if (stats[i].count > 0) {
+            float avg_turn = stats[i].sum_turnaround / stats[i].count;
+            float avg_wait = stats[i].sum_waiting / stats[i].count;
+            float avg_make = stats[i].sum_makespan / stats[i].count;
+            float avg_thr = stats[i].sum_throughput / stats[i].count;
+            
+            char note[256] = "";
+            if (avg_turn <= min_turn + 0.001 && min_turn < max_turn - 0.001) strcat(note, "Best Turnaround; ");
+            if (avg_wait <= min_wait + 0.001 && min_wait < max_wait - 0.001) strcat(note, "Best Waiting; ");
+            if (avg_make <= min_makespan + 0.001 && min_makespan < max_makespan - 0.001) strcat(note, "Best Makespan; ");
+            if (avg_thr >= max_thr - 0.001 && max_thr > min_thr + 0.001) strcat(note, "Best Throughput; ");
+            
+            fprintf(fout, "%s,%.2f,%.2f,%.2f,%.4f,%s\n", 
+                    stats[i].policy, avg_make, avg_wait, avg_turn, avg_thr, note);
         }
     }
     fclose(fout);
